@@ -261,13 +261,18 @@ class AwsRegion < AwsBase
     end
 
     # writes contents of S3 object to local file
-    # example: get( :s3_path_to_object=>development/myfile.txt',
+    # example: 
+    #          get( :s3_path_to_object=>'development/myfile.txt',
     #               :dest_file_path=>'/tmp/foo.txt')
     #          would write to local /tmp/foo.txt a file retrieved from s3
     #          at development/myfile.txt
+    #
+    #          get( :s3_path_to_object=>'development/myfile.txt' ) do |chunk|
+    #            io.write chunk
+    #          end
     # @param options [Hash] - Can contain:
     # * :s3_path_to_object - S3 object path
-    # * :dest_file_path - local file were file will be written
+    # * :dest_file_path - local file were file will be written (ignored if block given)
     # @return [Boolean]
     def get(options={})
       begin
@@ -278,8 +283,13 @@ class AwsRegion < AwsBase
         response = @region.s3.get_object(:bucket => @id,
                                          :key => s3_path_to_object)
         response.body.rewind
-        File.open(dest_file_path, 'wb') do |file|
-          response.body.each { |chunk| file.write chunk }
+
+        if block_given?
+          response.body.each { |chunk| yield chunk }
+        else
+          File.open(dest_file_path, 'wb') do |file|
+            response.body.each { |chunk| file.write chunk }
+          end
         end
       rescue Exception => e
         return false
