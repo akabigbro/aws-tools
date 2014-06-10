@@ -285,14 +285,11 @@ class AwsRegion < AwsBase
                                          :key => s3_path_to_object)
         response.body.rewind
 
-        if block_given?
-          response.body.each { |chunk| yield chunk }
-        else
-          File.open(dest_file_path, 'wb') do |file|
-            response.body.each { |chunk| file.write chunk }
-          end
+        File.open(dest_file_path, 'wb') do |file|
+          response.body.each { |chunk| file.write chunk }
         end
       rescue Exception => e
+        log e.message
         return false
       end
       true
