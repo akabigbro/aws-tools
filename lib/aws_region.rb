@@ -225,8 +225,7 @@ class AwsRegion < AwsBase
     # @param options [Hash] - Can contain any valid S3 bucket options see [docs](http://docs.aws.amazon.com/sdkforruby/api/frames.html)
     def put(local_file_path, aws_path, options={})
       aws_path = aws_path[0..-2] if aws_path[-1..-1] == '/'
-      filename = options[:filename]
-      filename ||= File.basename(local_file_path)
+      filename = File.basename(local_file_path)
       s3_path = "#{aws_path}/#{filename}"
       log "s3 writing #{local_file_path} to bucket #{@id} path: #{aws_path} s3 path: #{s3_path}"
       f = File.open local_file_path, 'rb'
